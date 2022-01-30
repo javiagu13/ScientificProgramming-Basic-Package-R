@@ -64,9 +64,10 @@ atributeDiscretizeEF <- function(atribute, n_bins)
 }
 
 #Test
-bek<-c(2,13,1,18,3,8,4,20,7,5)
-result<-atributeDiscretizeEF(bek, 5)
-result
+# bek<-c(2,13,1,18,3,8,4,20,7,5)
+#
+# result<-atributeDiscretizeEF(bek, 5)
+# result
 
 
 
@@ -89,11 +90,11 @@ datasetDiscretizeEF <- function(data, num.bins) {
 }
 
 #Test
-mat<-matrix(sample(1:20,100,replace=TRUE),ncol=10)
-data<-as.data.frame(mat)
-
-data
-datasetDiscretizeEF(data,5)
+# mat<-matrix(sample(1:20,100,replace=TRUE),ncol=10)
+# data<-as.data.frame(mat)
+#
+# data
+# datasetDiscretizeEF(data,5)
 
 
 
@@ -117,8 +118,8 @@ atributeDiscretizeEW <- function(atribute, num.bins) {
 }
 
 #Test
-result<-atributeDiscretizeEW(1:10, 5)
-result
+# result<-atributeDiscretizeEW(1:10, 5)
+# result
 
 
 #
@@ -141,11 +142,11 @@ datasetDiscretizeEW <- function(data, num.bins) {
 }
 
 #Test
-mat<-matrix(sample(1:20,100,replace=TRUE),ncol=10)
-data<-as.data.frame(mat)
-
-data
-datasetDiscretizeEW(data,5)
+# mat<-matrix(sample(1:20,100,replace=TRUE),ncol=10)
+# data<-as.data.frame(mat)
+#
+# data
+# datasetDiscretizeEW(data,5)
 
 
 
@@ -168,9 +169,9 @@ datasetVariance <- function(data){
   return(vector)
 }
 #TEST
-mat<-matrix(sample(1:20,100,replace=TRUE),ncol=10)
-data<-as.data.frame(mat)
-datasetVariance(data)
+# mat<-matrix(sample(1:20,100,replace=TRUE),ncol=10)
+# data<-as.data.frame(mat)
+# datasetVariance(data)
 
 
 #' @description calculates the AUC of every column of a dataset of two columns with a threshold
@@ -193,17 +194,17 @@ atributesAUC <- function (data, threshold){
   return(auc(mat[,1], mat[,2]))
 }
 #TEST
-numberCol<-runif(10, min=0, max=1)
-numberCol
-boolCol<-sample(c(TRUE,FALSE), 10, TRUE)
-boolCol
-
-data<-as.data.frame(matrix(c(numberCol,boolCol),ncol=2))
-data
-mat<-data.matrix(data)
-mat[,1][1]
-
-atributesAUC(data,0.4)
+# numberCol<-runif(10, min=0, max=1)
+# numberCol
+# boolCol<-sample(c(TRUE,FALSE), 10, TRUE)
+# boolCol
+#
+# data<-as.data.frame(matrix(c(numberCol,boolCol),ncol=2))
+# data
+# mat<-data.matrix(data)
+# mat[,1][1]
+#
+# atributesAUC(data,0.4)
 
 
 
@@ -243,6 +244,7 @@ entropy <- function (x){
     #probabilidad de aparicion
     probability<-appearances/length(x)
     arrayOfFrequencies <- c(arrayOfFrequencies, probability)
+    print(arrayOfFrequencies)
   }
 
   total<-0
@@ -254,9 +256,9 @@ entropy <- function (x){
 }
 
 #TEST
-mat<-matrix(sample(1:20,100,replace=TRUE),ncol=10)
-data<-as.data.frame(mat)
-datasetEntropy(data)
+# mat<-matrix(sample(1:20,100,replace=TRUE),ncol=10)
+# data<-as.data.frame(mat)
+# datasetEntropy(data)
 
 ######################################Normalization and Estandarization##################################
 #' @description normalizes the vector v (it reduces the numbers to 0-1 interval)
@@ -268,10 +270,10 @@ variableNormalization<-function(v){
   return(v.norm)
 }
 #test
-numberCol1<-runif(10, min=0, max=10)
-numberCol1
-
-variableNormalization(numberCol1)
+# numberCol1<-runif(10, min=0, max=10)
+# numberCol1
+#
+# variableNormalization(numberCol1)
 
 
 #' @description it estandarizes a vector
@@ -282,15 +284,15 @@ variableEstandarization<-function(v){
   v.est <- (v-mean(v)) / sd(v)
   return(v.est)
 }
-#TEST
-numberCol1<-runif(10, min=0, max=10)
-numberCol1
-variableEstandarization(numberCol1)
+# #TEST
+# numberCol1<-runif(10, min=0, max=10)
+# numberCol1
+# variableEstandarization(numberCol1)
 
 
 
 #' @description it normalizes a whole dataset column by column
-#' @param data
+#' @param data the data
 #' @return returns the dataset normalized
 
 datasetNormalization<-function(data){
@@ -303,14 +305,14 @@ datasetNormalization<-function(data){
   return(mat)
 }
 #TEST
-numberCol1<-runif(10, min=0, max=10)
-numberCol1
-numberCol2<-runif(10, min=0, max=10)
-numberCol2
-data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
-data
-normalized<-datasetNormalization(data)
-normalized
+# numberCol1<-runif(10, min=0, max=10)
+# numberCol1
+# numberCol2<-runif(10, min=0, max=10)
+# numberCol2
+# data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
+# data
+# normalized<-datasetNormalization(data)
+# normalized
 
 #' @description it estandarizes a whole dataset column by column
 #' @param data
@@ -325,19 +327,59 @@ datasetEstandarization<-function(data){
   return(mat)
 }
 #TEST
-numberCol1<-runif(10, min=0, max=10)
-numberCol1
-numberCol2<-runif(10, min=0, max=10)
-numberCol2
-data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
-data
-estandarized<-datasetEstandarization(data)
-estandarized
+# numberCol1<-runif(10, min=0, max=10)
+# numberCol1
+# numberCol2<-runif(10, min=0, max=10)
+# numberCol2
+# data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
+# data
+# estandarized<-datasetEstandarization(data)
+# estandarized
 
 ######################################Filtering based on Metrics##################################
-#todo lo relacionado con var auc y entropia pero no se a que se refiere: PREGUNTAR
-#TODO
+#' @description delete variables with variance lesser than var
+#' @param data which is any given dataframe
+#' @param var which is the threshold to delete a variable r not
+#' @return returns the dataset with the filtering done
+#
+filterVariance<-function(data, var){
+  #getting vector of variancess
+  vec<-datasetVariance(data)
+  columnsToDelete<-c()
+  for (i in 1:length(vec)){
+    if(var>=vec[i]){
+      columnsToDelete<-c(columnsToDelete,1)
+    }
+    else{
+      columnsToDelete<-c(columnsToDelete,0)
+    }
+  }
 
+  print(vec)
+  #deleting columns
+  for (i in length(vec):1){
+    print(data)
+    print(i)
+    if(var(columnsToDelete) == 0 && columnsToDelete[i]==1){
+      data<-data.frame()
+    }
+    else if(columnsToDelete[i]==1){
+      data<-data[,-i]
+    }
+  }
+  return(data)
+}
+
+#TEST
+# numberCol1<-runif(10, min=0, max=10)
+# numberCol1
+# numberCol2<-runif(10, min=0, max=10)
+# numberCol2
+# data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
+# data
+# datasetVariance(data)
+# dataset<-filterVariance(data,10)
+# print(dataset)
 
 ######################################Correlation calculus by pairs##################################
 #' @description it uses spearman's method to calculate the correlation of two variables in a dataset
@@ -350,12 +392,12 @@ atributesCorrelation<-function(data){
 }
 
 #TEST
-numberCol1<-runif(10, min=0, max=1)
-numberCol1
-numberCol2<-runif(10, min=0, max=1)
-numberCol2
-
-atributesCorrelation(data)
+# numberCol1<-runif(10, min=0, max=1)
+# numberCol1
+# numberCol2<-runif(10, min=0, max=1)
+# numberCol2
+#
+# atributesCorrelation(data)
 
 ######################################Plots for AUC and Mutual Information##################################
 #' @description it plots the area under the curve given a dataset of numbers and classes using a threshold as
@@ -378,15 +420,15 @@ plotAUC<-function(data,threshold){
   roc(mat[,1], mat[,2],percent=TRUE, plot=TRUE, ci=TRUE)
 }
 #TEST
-numberCol1<-runif(10, min=0, max=1)
-numberCol1
-numberCol2<-runif(10, min=0, max=1)
-numberCol2
-data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
-data
-mat<-data.matrix(data)
-
-plotMutualInformation(data,mat[,1],mat[,2])
+# numberCol1<-runif(10, min=0, max=1)
+# numberCol1
+# numberCol2<-runif(10, min=0, max=1)
+# numberCol2
+# data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
+# data
+# mat<-data.matrix(data)
+#
+# plotMutualInformation(data,mat[,1],mat[,2])
 
 
 
@@ -401,15 +443,15 @@ plotMutualInformation<-function(data,xVar,yVar){
 }
 
 #Test
-numberCol<-runif(10, min=0, max=1)
-numberCol
-boolCol<-sample(c(TRUE,FALSE), 10, TRUE)
-boolCol
-
-data<-as.data.frame(matrix(c(numberCol,boolCol),ncol=2))
-data
-mat<-data.matrix(data)
-plotAUC(data,0.5)
+# numberCol<-runif(10, min=0, max=1)
+# numberCol
+# boolCol<-sample(c(TRUE,FALSE), 10, TRUE)
+# boolCol
+#
+# data<-as.data.frame(matrix(c(numberCol,boolCol),ncol=2))
+# data
+# mat<-data.matrix(data)
+# plotAUC(data,0.5)
 
 
 ######################################Write and read datasets##################################
@@ -440,12 +482,12 @@ vecToDataType <- function(vec){
     return(as.integer(vec))
   }
 }
-#TEST
-data <- read.csv("C:\\Users\\Javi\\Documents\\UNI\\SME\\myCSV.csv",header=FALSE)
-newData<-datasetReadRetyping(data)
-class(newData[1,1])
-class(newData[1,2])
-class(newData[1,3])
+# #TEST
+# data <- read.csv("C:\\Users\\Javi\\Documents\\UNI\\SME\\myCSV.csv",header=FALSE)
+# newData<-datasetReadRetyping(data)
+# class(newData[1,1])
+# class(newData[1,2])
+# class(newData[1,3])
 
 
 
@@ -459,10 +501,10 @@ writeDatasetCSV<-function(data, root){
 }
 
 #TEST
-numberCol1<-runif(10, min=0, max=1)
-numberCol1
-numberCol2<-runif(10, min=0, max=1)
-numberCol2
-data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
-data
-writeDatasetCSV(data, "C:\\Users\\Javi\\Documents\\UNI\\SME\\myCSV2.csv")
+# numberCol1<-runif(10, min=0, max=1)
+# numberCol1
+# numberCol2<-runif(10, min=0, max=1)
+# numberCol2
+# data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
+# data
+# writeDatasetCSV(data, "C:\\Users\\Javi\\Documents\\UNI\\SME\\myCSV2.csv")

@@ -1,0 +1,546 @@
+library(classInt)
+library(Hmisc)
+library(pROC)
+library(ggplot2)
+######################################Discretization##################################
+#in vector and it discretizes it equal frequency
+#atributeDiscretizeEF, datasetDiscretizeEF, atributeDiscretizeWF, datasetDiscretizeWF
+
+#'intervalToInt
+#'
+#' @description it transforms an interval to an integer, for instance [1,2) interval to 1.
+#'  This way we can get a set aof intervals and get all the cutting points. It is an auxiliar
+#'  function
+#' @param interval which is a interval in any datatype
+#' @return returns an integer which will be the cutting point
+
+intervalToInt <- function(interval) {
+  print(interval)
+  interval<-toString(interval)
+  numberstring_split <- strsplit(interval, "")[[1]]
+  number<-""
+  for (char in numberstring_split) {
+    if(char=="0"||char=="1"||char=="2"||char=="3"||char=="4"||char=="5"||char=="6"||char=="7"||char=="8"||char=="9"||char=="/."){
+      print(char)
+      number<-paste(number,char,sep="")
+    }
+    else if(char==","){break}
+  }
+  print(number)
+  return(as.integer(number))
+}
+
+#'atributeDiscretizeEF
+#'
+#' @description given an atribute vector it separates the values with equal frequency by giving a
+#' number of steps.
+#' @param atribute is the atribute
+#' @param n_bins is the number of steps
+#' @return a list of two vectors, the first the actual interval each value belongs to, and the second with the set of intervals
+
+atributeDiscretizeEF <- function(atribute, n_bins)
+{
+  n_bins_orig = n_bins
+  res = cut2(atribute, g = n_bins)
+  uq=unique(res)
+  n_bins_final = length(uq)
+  if (n_bins_final != n_bins & sum(is.na(uq))==0)
+    warning(sprintf("It's not possible to calculate with n_bins=%s, setting n_bins in: %s.",
+                    n_bins, n_bins_final))
+  print(res)
+  #Now lets obtain the numeric vector
+  cut.points<-c()
+  for (i in 1:length(res)){
+    if(intervalToInt(res[i]) %in% cut.points ==FALSE)
+      cut.points<-c(cut.points, intervalToInt(res[i]))
+  }
+  #auxiliar array where the first value must be a bit less than actual
+  #for a good functioning of cut function
+  if(max(atribute)%in% cut.points ==FALSE){
+    cut.points<-c(cut.points,max(atribute))
+  }
+  cut.points<-sort(cut.points, decreasing=FALSE)
+  aux<-cut.points
+  aux[1]<-aux[1]-0.1
+  print(cut.points)
+  x.discretized<- cut(atribute, breaks = aux, labels = FALSE)
+  return(list(x.discretized, res))
+}
+
+#Test
+# bek<-c(2,13,1,18,3,8,4,20,7,5)
+#
+# result<-atributeDiscretizeEF(bek, 5)
+# result
+
+
+
+#'datasetDiscretizeEF
+#'
+#' @description in dataset and it discretizes it equal frequency
+#' @param data is the actual dataset that is going to be discretizised
+#' @param num.bins is the amount of steps to be applied
+#' @details it does the same as discretizeEF function but with each column of the dataset
+#' @return discretizised dataset
+#'
+datasetDiscretizeEF <- function(data, num.bins) {
+  mat<-as.matrix(data) #algun problema aqui interpreto
+  numberOfCol<-length(mat[,1])
+  for (i in 1:numberOfCol){
+    print(mat[,i])
+    mat[,i]<-atributeDiscretizeEF(mat[,i],num.bins)[[1]]
+  }
+
+  return(mat)
+}
+
+#Test
+# mat<-matrix(sample(1:20,100,replace=TRUE),ncol=10)
+# data<-as.data.frame(mat)
+#
+# data
+# datasetDiscretizeEF(data,5)
+
+
+
+#'atributeDiscretizeEW
+#'
+#' @description given an atribute vector it separates the values with equal width by giving a
+#' number of steps.
+#' @param atribute is the atribute
+#' @param n_bins is the number of steps
+#' @return a list of two vectors, the first the actual interval each value belongs to, and the second with the set of intervals
+
+atributeDiscretizeEW <- function(atribute, num.bins) {
+  classIntervals(atribute, num.bins)
+  x.discretized <- classIntervals(atribute, num.bins, style = 'equal')
+  cut.points<-x.discretized$brks
+  #auxiliar array where the first value must be a bit less than actual
+  #for a good functioning of cut function
+  aux<-cut.points
+  aux[1]<-aux[1]-0.1
+  x.discretized<- cut(atribute, breaks = aux, labels = FALSE)
+  return(list(x.discretized, cut.points))
+}
+
+#Test
+# result<-atributeDiscretizeEW(1:10, 5)
+# result
+
+#'datasetDiscretizeEW
+#'
+#' @description in dataset and it discretizes it equal width
+#' @param data is the actual dataset that is going to be discretizised
+#' @param num.bins is the amount of steps to be applied
+#' @details it does the same as discretizeEF function but with each column of the dataset
+#' @return discretizised dataset
+#'
+datasetDiscretizeEW <- function(data, num.bins) {
+  mat<-as.matrix(data) #algun problema aqui interpreto
+  numberOfCol<-length(mat[,1])
+  for (i in 1:numberOfCol){
+    print(mat[,i])
+    mat[,i]<-atributeDiscretizeEW(mat[,i],num.bins)[[1]]
+  }
+
+  return(mat)
+
+}
+
+#Test
+# mat<-matrix(sample(1:20,100,replace=TRUE),ncol=10)
+# data<-as.data.frame(mat)
+#
+# data
+# datasetDiscretizeEW(data,5)
+
+
+
+
+######################################Metric Calculation##################################
+#datasetVariance, datasetAUC, datasetEntropy
+
+#'datasetVariance
+#'
+#' @description calculates the variance of every column of the dataset
+#' @param data is the dataset
+#' @return it returns the vector of variances being the first the one of the first column, the second of the second column...
+
+datasetVariance <- function(data){
+  mat<-as.matrix(data)
+
+  vector<-c()
+  numberOfCol<-length(mat[1,])
+  for (i in 1:numberOfCol)
+    vector[i]<-var(mat[,i])
+
+  return(vector)
+}
+#TEST
+# mat<-matrix(sample(1:20,100,replace=TRUE),ncol=10)
+# data<-as.data.frame(mat)
+# datasetVariance(data)
+
+#'atributesAUC
+#'
+#' @description calculates the AUC of every column of a dataset of two columns with a threshold
+#' @param data is the dataset of two columns
+#' @param threshold is the threshold to turn some data into true
+#' @details having two columns, the second one is a column of true of false of the real class.
+#' the first column, however, are values where up to some threshold will be false and the rest true, then the AUC is calculated
+#' @return Area under the curve is returned
+
+atributesAUC <- function (data, threshold){
+  mat<-data.matrix(data)
+  for (i in 1:length(mat[,1])){
+    if (mat[,1][i]<=threshold){
+      mat[,1][i]=0
+    }
+    else{
+      mat[,1][i]=1
+    }
+  }
+  return(auc(mat[,1], mat[,2]))
+}
+#TEST
+# numberCol<-runif(10, min=0, max=1)
+# numberCol
+# boolCol<-sample(c(TRUE,FALSE), 10, TRUE)
+# boolCol
+#
+# data<-as.data.frame(matrix(c(numberCol,boolCol),ncol=2))
+# data
+# mat<-data.matrix(data)
+# mat[,1][1]
+#
+# atributesAUC(data,0.4)
+
+
+
+#'datasetEntropy
+#'
+#' @description calculates the entropy of every column of the dataset
+#' @param data is the dataset
+#' @return it returns the entropy of variances being the first the one of the first column, the second of the second column...
+
+datasetEntropy <- function (data){
+  mat<-data.matrix(data)
+  vector<-c()
+  numberOfCol<-length(mat[,1])
+  for (i in 1:numberOfCol)
+    vector[i]<-entropy(mat[,i])
+
+  return(vector)
+}
+
+#' @description an auxiliar function used by entropy to help put numbers in consecutive order
+#' @param x is an array
+#' @return an array of consecutive numbers
+
+consecutivize <-function(x){
+  result<-cumsum(c(0, diff(x)) != 0) + 1
+  return(result)
+}
+
+#'entropy
+#'
+#' @description given an array x it calculates the entropy
+#' @param x an array
+#' @return a single number being the entropy
+
+entropy <- function (x){
+  arrayOfFrequencies<-c()
+  x<-consecutivize(x)
+  for (i in min(x):max(x)){
+    #numero de apariciones de i
+    appearances<-sum(x == i)
+    #probabilidad de aparicion
+    probability<-appearances/length(x)
+    arrayOfFrequencies <- c(arrayOfFrequencies, probability)
+    print(arrayOfFrequencies)
+  }
+
+  total<-0
+  for (i in arrayOfFrequencies){
+    total<-(total-i*log2(i))
+  }
+
+  return(total)
+}
+
+#TEST
+# mat<-matrix(sample(1:20,100,replace=TRUE),ncol=10)
+# data<-as.data.frame(mat)
+# datasetEntropy(data)
+
+######################################Normalization and Estandarization##################################
+
+#'variableNormalization
+#'
+#' @description normalizes the vector v (it reduces the numbers to 0-1 interval)
+#' @param v the vector
+#' @return returns a vector normalized
+
+variableNormalization<-function(v){
+  v.norm <- (v - min(v)) / (max(v) - min(v))
+  return(v.norm)
+}
+#test
+# numberCol1<-runif(10, min=0, max=10)
+# numberCol1
+#
+# variableNormalization(numberCol1)
+
+#'variableEstandarization
+#'
+#' @description it estandarizes a vector
+#' @param v is the vector
+#' @return returns and estandarized vector
+
+variableEstandarization<-function(v){
+  v.est <- (v-mean(v)) / sd(v)
+  return(v.est)
+}
+# #TEST
+# numberCol1<-runif(10, min=0, max=10)
+# numberCol1
+# variableEstandarization(numberCol1)
+
+
+#'datasetNormalization
+#'
+#' @description it normalizes a whole dataset column by column
+#' @param data the data
+#' @return returns the dataset normalized
+
+datasetNormalization<-function(data){
+  mat<-as.matrix(data)
+  numberOfCol<-length(mat[1,])
+  for (i in 1:numberOfCol){
+    print(mat[,i])
+    mat[,i]<-variableNormalization(mat[,i])
+  }
+  return(mat)
+}
+#TEST
+# numberCol1<-runif(10, min=0, max=10)
+# numberCol1
+# numberCol2<-runif(10, min=0, max=10)
+# numberCol2
+# data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
+# data
+# normalized<-datasetNormalization(data)
+# normalized
+
+#'datasetEstandarization
+#'
+#' @description it estandarizes a whole dataset column by column
+#' @param data
+#' @return returns the dataset estandarized
+datasetEstandarization<-function(data){
+  mat<-as.matrix(data)
+  numberOfCol<-length(mat[1,])
+  for (i in 1:numberOfCol){
+    print(mat[,i])
+    mat[,i]<-variableEstandarization(mat[,i])
+  }
+  return(mat)
+}
+#TEST
+# numberCol1<-runif(10, min=0, max=10)
+# numberCol1
+# numberCol2<-runif(10, min=0, max=10)
+# numberCol2
+# data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
+# data
+# estandarized<-datasetEstandarization(data)
+# estandarized
+
+######################################Filtering based on Metrics##################################
+
+#'filterVariance
+#'
+#' @description delete variables with variance lesser than var
+#' @param data which is any given dataframe
+#' @param var which is the threshold to delete a variable r not
+#' @return returns the dataset with the filtering done
+#
+filterVariance<-function(data, var){
+  #getting vector of variancess
+  vec<-datasetVariance(data)
+  columnsToDelete<-c()
+  for (i in 1:length(vec)){
+    if(var>=vec[i]){
+      columnsToDelete<-c(columnsToDelete,1)
+    }
+    else{
+      columnsToDelete<-c(columnsToDelete,0)
+    }
+  }
+
+  print(vec)
+  #deleting columns
+  for (i in length(vec):1){
+    print(data)
+    print(i)
+    if(var(columnsToDelete) == 0 && columnsToDelete[i]==1){
+      data<-data.frame()
+    }
+    else if(columnsToDelete[i]==1){
+      data<-data[,-i]
+    }
+  }
+  return(data)
+}
+
+#TEST
+# numberCol1<-runif(10, min=0, max=10)
+# numberCol1
+# numberCol2<-runif(10, min=0, max=10)
+# numberCol2
+# data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
+# data
+# datasetVariance(data)
+# dataset<-filterVariance(data,10)
+# print(dataset)
+
+######################################Correlation calculus by pairs##################################
+
+#'atributesCorrelation
+#'
+#' @description it uses spearman's method to calculate the correlation of two variables in a dataset
+#' @param data is the dataset of two variables
+#' @return returns the correlation based on spearman's method
+
+atributesCorrelation<-function(data){
+  mat<-data.matrix(data)
+  return(cor(mat[,1], mat[,2], method = "spearman"))
+}
+
+#TEST
+# numberCol1<-runif(10, min=0, max=1)
+# numberCol1
+# numberCol2<-runif(10, min=0, max=1)
+# numberCol2
+#
+# atributesCorrelation(data)
+
+######################################Plots for AUC and Mutual Information##################################
+
+#'plotAUC
+#'
+#' @description it plots the area under the curve given a dataset of numbers and classes using a threshold as
+#' in the previous AUC calculus.
+#' @param data has two columns, the first of numbers where a threshold will be applied and the second
+#' one of actual classes
+#' @param threshold is the threshold to make true or false the values on the first column
+#' @return AUC curve
+#'
+plotAUC<-function(data,threshold){
+  mat<-data.matrix(data)
+  for (i in 1:length(mat[,1])){
+    if (mat[,1][i]<=threshold){
+      mat[,1][i]=0
+    }
+    else{
+      mat[,1][i]=1
+    }
+  }
+  roc(mat[,1], mat[,2],percent=TRUE, plot=TRUE, ci=TRUE)
+}
+#TEST
+# numberCol1<-runif(10, min=0, max=1)
+# numberCol1
+# numberCol2<-runif(10, min=0, max=1)
+# numberCol2
+# data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
+# data
+# mat<-data.matrix(data)
+#
+# plotMutualInformation(data,mat[,1],mat[,2])
+
+
+#'plotMutualInformation
+#'
+#' @description plots mutual information correlation
+#' @param data the dataset to be plotted
+#' @param xVar x variable
+#' @param yVar y variable
+#' @return it returns the plot
+#'
+plotMutualInformation<-function(data,xVar,yVar){
+  ggplot(data) +  aes(x = xVar, y = yVar) +  geom_point(colour = "#0c4c8a") +  theme_minimal()
+}
+
+#Test
+# numberCol<-runif(10, min=0, max=1)
+# numberCol
+# boolCol<-sample(c(TRUE,FALSE), 10, TRUE)
+# boolCol
+#
+# data<-as.data.frame(matrix(c(numberCol,boolCol),ncol=2))
+# data
+# mat<-data.matrix(data)
+# plotAUC(data,0.5)
+
+
+######################################Write and read datasets##################################
+
+#'datasetReadRetyping
+#'
+#' @description it retypes the dataset from any kind of numbers to integer, factor or numeric
+#' @param data is the dataset
+#' @return returns the actual retyped data
+
+datasetReadRetyping<-function(data){
+  for (i in 1:ncol(data)){
+    data[,i]<-vecToDataType(data[,i])
+  }
+  return(data)
+}
+
+
+#'vecToDataType
+#'
+#' @description auxiliar function that helps the retype
+#' @param vec is a vector to sort into integer, factor or numeric
+#' @return it returns the vector retyped
+
+vecToDataType <- function(vec){
+  if(grepl(".", as.character(vec[1]),fixed=TRUE)){
+    return(as.numeric(vec))
+  }
+  else if(length(rle(sort(vec))$values)<=5){
+    return(as.factor(vec))
+  }
+  else{
+    return(as.integer(vec))
+  }
+}
+# #TEST
+# data <- read.csv("C:\\Users\\Javi\\Documents\\UNI\\SME\\myCSV.csv",header=FALSE)
+# newData<-datasetReadRetyping(data)
+# class(newData[1,1])
+# class(newData[1,2])
+# class(newData[1,3])
+
+
+#'writeDatasetCSV
+#'
+#' @description given a dataset and a root it creates the csv
+#' @param data is the dataset
+#' @param root is the root
+#' @return creates a csv in the root directory
+#'
+writeDatasetCSV<-function(data, root){
+  write.csv(data,root,row.names = FALSE)
+}
+
+#TEST
+# numberCol1<-runif(10, min=0, max=1)
+# numberCol1
+# numberCol2<-runif(10, min=0, max=1)
+# numberCol2
+# data<-as.data.frame(matrix(c(numberCol1,numberCol2),ncol=2))
+# data
+# writeDatasetCSV(data, "C:\\Users\\Javi\\Documents\\UNI\\SME\\myCSV2.csv")
