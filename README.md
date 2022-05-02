@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 In order to install the package, first download the following file from the current repository:
 
 ```
@@ -40,3 +41,11 @@ The name of the file is as follows:
 testFile.R
 ```
 
+=======
+# ScientificProgramming-Basic-Package-R
+It is a basic package with functions to help scientific programming
+
+Package in the tar.gz file
+
+The rest is the inside of the package
+>>>>>>> 4c0f246556b740b3cefbdeee1a2f8cdf5ace6ba0
