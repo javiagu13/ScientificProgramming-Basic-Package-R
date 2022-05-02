@@ -1,0 +1,114 @@
+---
+title: "Scientific Programming Dataset"
+author: "Javier Aguirre"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Welcome to the ScientificProgramming package, the package includes the following functions:
+
+### Dataset read retyping and write into csv:
+
+datasetReadRetyping
+
+writeDatasetCSV
+
+### Variable and dataset normalization and estandarization:
+
+variableNormalization
+
+variableEstandarization
+
+datasetNormalization
+
+datasetEstandarization
+
+### Data Discretization:
+
+atributeDiscretizeEF
+
+datasetDiscretizeEF
+
+atributeDiscretizeEW
+
+datasetDiscretizeEW
+
+### Dataset Variance, AUC and Entropy:
+
+variance
+
+entropy
+
+auc
+
+
+### Dataset filtering:
+
+filterDataset
+
+### Correlation between two atributes:
+
+atributesCorrelation
+
+atributesMutualInformation
+
+plotAUC
+
+
+# How to go through the package
+
+### Loading and storing data
+
+In the case you have an existing dataset you can load in R and in the case it is numerical the *datasetReadRetyping* will convert the dataset in the correct type. Each column will be transformed to numerical, factor or integer automatically.
+
+After finishing all the data analysis or anything that has been done in R with the *writeDatasetCSV* given a dataframe and a root it will convert the given dataframe onto csv file on the given path.
+
+
+### Variable and dataset normalization and estandarization:
+
+For the different variables in your dataset or in the case you want to make different operations with a vector the following functions will allow you to normalize or estandarize a dataset or a variable. 
+
+For instance, 
+
+In the case of having a variable or vector, the function *variableNormalization* given that vector will normalize it and also bring back the maximum and minimum. This way, rescaling the values of the vector between 0 and 1.
+
+Again, in the case of having a variable or vector and wanting this time to estandarize it, the function *variableEstandarization* will estandarize the given vector and return it estandarized.
+
+Finally the same options are available for a full dataset. The names of the functions are *datasetNormalization* and *datasetEstandarization* they are straightforward in use. Simply provide a dataset to the function and depending on the function you use it will automatically bring back the dataframe normalized or estandarized.
+
+
+### Data Discretization:
+
+The package contains various functions to discretize like in the previous section variables or a full dataset. The two ways of doing it are equal frequency or equal width.
+
+
+Given a vector and a number of cuts to be performed the *atributeDiscretizeEF* and *atributeDiscretizeEW* functions slice that vector in different ways. The first function in equal frequency whereas the second one in equal frequency.
+
+in the case of equal width it will return two vectors, one with the actual separation of the values and the second one with the positions where it has ben cut. In the case of equal frequency it will provide the same in a factor way.
+
+
+The same functions are available for the whole dataset. *datasetDiscretizeEF* discretizes the dataset given a dataframe and a number of cuts and it will cut the whole dataset column by column in the given amount of cuts in an equal frequency manner. *datasetDiscretizeEW* has the same input and output but in this case it does it in an equal width manner
+
+
+
+### Dataset Variance, AUC and Entropy:
+
+Also in the package in order to be able to calculate different features of a variable there are three different functions in order to calculate the variance of a variable, the entropy or the area under the curve. The names of the functions are as follows: *variance*, *entropy* and *auc*. Directly applied to any vector the corresponding value will be returned.
+
+### Dataset variance filtering:
+
+Taking into account the previous features, there must be a way to filter a whole dataset with the features described above. This function is called *filterDataset* and giving a dataset, a threshold and a feature the dataset will be filtered. The way it works is the following. We can choose whether to filter by *variance* or by *entropy*. Then the function will calculate the corresponding value of each column (for instance the variance). All the columns with variance higher than the given threshold will be deleted from the dataset, thus, giving back a filtered dataset.
+
+### Correlation and plots:
+
+Finally, there are functions to analyze correlations in a dataset. For *atributesCorrelation* will calculate and return the correlation calculus of a given dataframe, as well as plotting the matrix. However, for categorical information there is another function called *atributesMutualInformation* which calculates the mutual information among variables.
+
+Finally there is also a function included that plots the AUC (*plotAUC*) giving a vector of numbers and a boolean vector as described in the AUC calculus previously.

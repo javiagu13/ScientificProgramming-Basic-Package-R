@@ -25,9 +25,12 @@ you are ready to run any of the contained functions inside the package.
 
 Usage of the package:
 
-In order to use the package, please, see the vignette.html inside the repository for an
+In order to use the package, please, see the myVignette.html inside the repository for an
 in depth explanation of the package.
 
+```
+ScientificProgramming-Basic-Package-R\docs\myVignette.html
+```
 ------------------------------------------------------------------------
 
 Testing the package:
