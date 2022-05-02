@@ -1,3 +1,3 @@
-export(atributeDiscretizeEF,datasetDiscretizeEF,atributeDiscretizeEW,datasetDiscretizeEW,datasetVariance,
-       atributesAUC, datasetEntropy, entropy,variableNormalization, variableEstandarization,datasetNormalization,
-       datasetEstandarization,filterVariance,atributesCorrelation,plotAUC,plotMutualInformation,datasetReadRetyping,writeDatasetCSV)
+export(atributeDiscretizeEF,datasetDiscretizeEF,atributeDiscretizeEW,datasetDiscretizeEW,variance,
+       auc, datasetEntropy, entropy,variableNormalization, variableEstandarization,datasetNormalization,
+       datasetEstandarization,filterDataset,atributesCorrelation,plotAUC,atributesMutualInformation,datasetReadRetyping,writeDatasetCSV)

@@ -4,8 +4,12 @@ Title: Useful Scientific Programming Functions
 Version: 0.1.0
 Author: Javier Aguirre
 Maintainer: The package maintainer <javiagu13@gmail.com>
+Imports:
+	ggplot2,
+	Hmisc,
+	classInt,
+	pROC
 Suggests:
-  ggplot2,
   rmarkdown,
   knitr
 Description: More about what it does (maybe more than one line)
